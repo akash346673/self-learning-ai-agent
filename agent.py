@@ -1,28 +1,13 @@
-import os
-
-from dotenv import load_dotenv
-from openai import OpenAI
+import requests
 
 
-# Load variables from .env
-load_dotenv()
-
-api_key = os.getenv("OPENAI_API_KEY")
-
-if not api_key:
-    raise ValueError(
-        "OPENAI_API_KEY was not found. "
-        "Check your .env file."
-    )
-
-
-# Create OpenAI client
-client = OpenAI(api_key=api_key)
+OLLAMA_URL = "http://localhost:11434/api/chat"
+MODEL = "qwen2.5:3b"
 
 
 def generate_response(task, memories):
     """
-    Generate an AI response using the user's task
+    Generate an AI response using Ollama
     and relevant previous memories.
     """
 
@@ -51,12 +36,27 @@ USER TASK:
 {memory_context}
 
 Use previous experiences and lessons only when they are relevant.
-Do not mention your internal memory system to the user unless asked.
+Do not mention your internal memory system unless the user asks about it.
 """
 
-    response = client.responses.create(
-        model="gpt-4.1-mini",
-        input=prompt
+    payload = {
+        "model": MODEL,
+        "messages": [
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        "stream": False
+    }
+
+    response = requests.post(
+        OLLAMA_URL,
+        json=payload
     )
 
-    return response.output_text
+    response.raise_for_status()
+
+    data = response.json()
+
+    return data["message"]["content"]
