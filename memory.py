@@ -1,5 +1,6 @@
 import json
 import os
+import re
 
 MEMORY_FILE = "agent_memory.json"
 
@@ -40,18 +41,40 @@ def add_experience(task, response, score, lesson):
     save_memory(memory)
 
 
+def tokenize(text):
+    """Convert text into useful lowercase words."""
+
+    return set(
+        re.findall(r"\b[a-zA-Z]{3,}\b", text.lower())
+    )
+
+
+def calculate_similarity(task, previous_task):
+    """Calculate simple word-based similarity."""
+
+    task_words = tokenize(task)
+    previous_words = tokenize(previous_task)
+
+    if not task_words or not previous_words:
+        return 0
+
+    common_words = task_words.intersection(previous_words)
+
+    return len(common_words) / len(task_words)
+
+
 def get_relevant_memories(task, limit=3):
-    """Find previous experiences related to the current task."""
+    """Find the most relevant previous experiences."""
 
     memory = load_memory()
 
-    task_words = set(task.lower().split())
     scored_memories = []
 
     for experience in memory:
-        old_words = set(experience["task"].lower().split())
-
-        similarity = len(task_words.intersection(old_words))
+        similarity = calculate_similarity(
+            task,
+            experience["task"]
+        )
 
         scored_memories.append(
             (similarity, experience)
