@@ -2,6 +2,7 @@ from agent import generate_response
 from memory import add_experience, get_relevant_memories
 from evaluator import get_user_score
 from learner import create_lesson
+from stats import display_stats
 
 
 print("SELF-LEARNING AI AGENT")
@@ -41,3 +42,4 @@ print("\nLearning saved successfully!")
 
 print("\nLesson learned:")
 print(lesson)
+display_stats()
