@@ -7,36 +7,49 @@ MODEL = "qwen2.5:3b"
 
 def generate_response(task, memories):
     """
-    Generate an AI response using Ollama
-    and relevant previous memories.
+    Generate an AI response using Ollama and
+    lessons learned from previous experiences.
     """
 
     memory_context = ""
 
     if memories:
-        memory_context = "\nPrevious relevant experiences:\n"
+        memory_context = "\nRelevant previous experiences and lessons:\n"
 
         for index, memory in enumerate(memories, start=1):
             memory_context += f"""
 Experience {index}:
-Task: {memory["task"]}
-Response: {memory["response"]}
-Score: {memory["score"]}
-Lesson: {memory["lesson"]}
+Previous task: {memory["task"]}
+Previous response: {memory["response"]}
+Previous score: {memory["score"]}/5
+Lesson learned: {memory["lesson"]}
 """
 
     prompt = f"""
-You are a helpful self-learning AI assistant.
+You are a self-learning AI assistant.
 
-Answer the user's task clearly, accurately, and helpfully.
+Your goal is to answer the user's task accurately,
+clearly, and helpfully.
 
-USER TASK:
-{task}
+Before answering, consider the lessons learned from
+previous experiences.
+
+IMPORTANT:
+- Use previous lessons when they are relevant.
+- If a previous response received a low score, avoid
+  repeating the weaknesses described in its lesson.
+- If a previous response received a high score, preserve
+  the useful qualities described in its lesson.
+- Do not blindly copy previous answers.
+- Adapt the lessons to the current task.
+- Do not mention the internal memory system unless asked.
 
 {memory_context}
 
-Use previous experiences and lessons only when they are relevant.
-Do not mention your internal memory system unless the user asks about it.
+CURRENT USER TASK:
+{task}
+
+Now provide the best possible answer.
 """
 
     payload = {
